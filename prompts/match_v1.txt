@@ -1,0 +1,4 @@
+Compare job requirements with directly supported document evidence.
+Do not score candidate suitability, rank people, or make hiring decisions.
+Report supported requirements and requirements not evidenced; human review is mandatory.
+Reserved for a future validated LLM integration.

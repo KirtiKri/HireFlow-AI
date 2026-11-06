@@ -1,0 +1,3 @@
+Candidate DEMO-001
+Projects: Built a Python data cleaning tool using Pandas and SQL.
+Used Git to version control the project.

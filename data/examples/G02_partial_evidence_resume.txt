@@ -1,0 +1,2 @@
+Candidate reference: DEMO-G02
+Experience: Developed Python services and wrote SQL queries for reporting.

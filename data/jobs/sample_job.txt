@@ -1,0 +1,2 @@
+Junior Data Analyst
+Required skills: Python, SQL, Pandas, Excel, Git.

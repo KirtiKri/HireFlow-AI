@@ -1,0 +1,2 @@
+Candidate reference: DEMO-G01
+Projects: Built Python scripts and SQL reports. Used Pandas for data cleaning and Git for version control.

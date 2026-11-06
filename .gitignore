@@ -1,0 +1,28 @@
+
+# Python environment
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# API keys and secrets
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Local databases and vector storage
+*.db
+*.db-shm
+*.db-wal
+.chroma/
+chroma_db/
+
+# Logs and caches
+logs/*.jsonl
+.pytest_cache/
+.ruff_cache/
+
+# Operating system
+.DS_Store
+Thumbs.db

@@ -1,0 +1,4 @@
+[
+ {"id":"analyst","title":"Junior Data Analyst","description":"Junior Data Analyst. Required technical skills: Python, SQL, Pandas, Excel, Git. Review evidence from practical projects. A resume alone does not establish proficiency."},
+ {"id":"developer","title":"Backend Python Developer","description":"Backend Python Developer. Required technical skills: Python, SQL, Git, Docker, FastAPI. Assess only explicitly documented experience and request clarification when evidence is absent."}
+]

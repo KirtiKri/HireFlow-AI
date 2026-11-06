@@ -1,0 +1,3 @@
+Candidate reference: DEMO-G04
+I have never used Python.
+Experience: Wrote SQL queries for a student database.
