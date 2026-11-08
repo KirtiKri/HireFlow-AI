@@ -100,6 +100,9 @@ The MVP stores candidate references, extracted skill mentions, evidence excerpts
 ### Resume Review
 ![Resume Review Workspace](docs/screenshots/start-review.png)
 
+### Manage Jobs
+![HireFlow Homepage](docs/screenshots/manage_job.png)
+
 ### Human Review Queue
 ![Human Review Queue](docs/screenshots/human-review.png)
 
