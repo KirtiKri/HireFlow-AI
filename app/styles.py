@@ -3,7 +3,7 @@ import streamlit as st
 
 def apply_styles():
     st.markdown('''<style>
-    .block-container {max-width: 1180px; padding-top: 2.2rem; padding-bottom: 3rem;}
+    .stMain .block-container {max-width: 1180px; padding-top: 1.25rem; padding-bottom: 3rem;}
     h1,h2,h3 {letter-spacing: -.03em; color: #183B35;}
     h1 {font-weight: 730;}
     [data-testid="stSidebar"] {background: #F0F2ED; border-right: 1px solid #D4DCD5;}

@@ -1,0 +1,111 @@
+        selected_job = st.selectbox('Saved job', jobs, format_func=lambda j:f"{j['title']} (#{j['id']})")
+        job_description = selected_job['description']
+        selected_job_id = selected_job['id']
+    else:
+        st.warning('No saved jobs. Select a sample job or create one in Manage jobs.')
+        st.stop()
+    with st.expander('Read the job requirements'):
+        st.write(job_description)
+    st.divider()
+    st.markdown('### Step 2 of 3 — Provide a resume')
+    source = st.radio('Resume source', ['Try a fictional candidate', 'Upload a resume'], horizontal=True)
+    if source == 'Try a fictional candidate':
+        person = st.selectbox('Choose a candidate example', DEMO_RESUMES, format_func=lambda x:x['label'])
+        candidate_ref = person['label'].split(' — ')[0] + ' (DEMO)'
+        resume_text = person['text']
+        with st.expander('Preview fictional resume', expanded=True):
+            st.text(resume_text)
+    else:
+        candidate_ref = st.text_input('Candidate reference (use a fictional ID)', placeholder='e.g. DEMO-014')
+        uploaded = st.file_uploader('Choose a resume (PDF, DOCX or TXT)', type=['pdf','docx','txt'])
+        resume_text = None
+        if uploaded is not None:
+            try:
+                resume_text = extract_text(uploaded.name, uploaded.getvalue())
+                st.success(f'{uploaded.name} was read successfully.')
+                with st.expander('Preview extracted text'):
+                    st.text(resume_text[:6000])
+            except Exception as exc:
+                st.error(f'Could not read document: {exc}')
+    st.divider()
+    st.markdown('### Step 3 of 3 — Analyze the evidence')
+    with st.expander('Advanced settings (optional)'):
+        use_rag = st.checkbox('Use semantic evidence retrieval', value=False,
+                              help='Indexes the document in ChromaDB; may take longer on first use.')
+        st.caption('The system always requires a human reviewer. Semantic search adds supporting passages, not an automated hiring decision.')
+    if st.button('Analyze resume', type='primary', disabled=not resume_text or not candidate_ref.strip(), use_container_width=True):
+        try:
+            with st.spinner('Reading evidence and running the review workflow...'):
+                if selected_job_id is None:
+                    # Reuse an identical saved sample job instead of duplicating on each run.
+                    match = next((j for j in get_jobs() if j['title'] == sample_job['title'] and j['description'] == job_description), None)
+                    job_id = match['id'] if match else add_job(sample_job['title'], job_description)
+                else:
+                    job_id = selected_job_id
+                result = graph.invoke({'job_id':job_id, 'candidate_name':candidate_ref.strip(),
+                                       'job_description':job_description, 'resume_text':resume_text,
+                                       'trace':[], 'use_rag':use_rag,
+                                       'document_id':f'demo-job-{job_id}-review-{len(get_reviews())+1}'})
+                review_id = add_review(job_id, candidate_ref.strip(), result.get('observed_skills', []),
+                                       result.get('supported_skills', []), result.get('missing_skills', []),
+                                       result.get('evidence', {}), result['status'])
+            st.session_state.latest_result = result
+            st.session_state.latest_review_id = review_id
+        except Exception as exc:
+            st.error(f'Analysis failed: {exc}')
+    if st.session_state.get('latest_result'):
+        st.divider()
+        show_result(st.session_state.latest_result, st.session_state.latest_review_id)
+        st.button(
+    "Open human review queue",
+    on_click=navigate_to,
+    args=("Human review queue",),
+    key="open_human_review",
+)
+
+elif st.session_state.page == 'Human review queue':
+    intro('WORKSPACE / HUMAN OVERSIGHT', 'Human review queue',
+          'Inspect saved evidence and record what a person needs to verify. This is not an approval or rejection system.')
+    if not reviews:
+        st.info('No reviews yet. Run a fictional example from Start a review first.')
+        st.button(
+    "Start a review",
+    on_click=navigate_to,
+    args=("Start a review",),
+)
+       
+    else:
+        rows = [{'Review':r['id'], 'Candidate reference':r['candidate_name'],
+                 'Job':job_lookup.get(r['job_id'],{}).get('title','Archived job'),
+                 'Follow-up':get_action(r['id'])['state'].replace('_',' ').title()} for r in reviews]
+        st.dataframe(rows, hide_index=True, use_container_width=True)
+        chosen = st.selectbox('Open a saved review', reviews,
+                              format_func=lambda r:f"#{r['id']} — {r['candidate_name']}")
+        st.subheader('Recorded evidence')
+        left,right = st.columns(2)
+        with left:
+            st.markdown('**Requirements evidenced**')
+            st.write(', '.join(json.loads(chosen['supported_skills'])) or 'None identified')
+        with right:
+            st.markdown('**Requirements not evidenced**')
+            st.write(', '.join(json.loads(chosen['missing_skills'])) or 'None identified')
+        evidence = json.loads(chosen['evidence_json'])
+        with st.expander('View supporting passages'):
+            if evidence:
+                for skill, passage in evidence.items():
+                    st.markdown(f'**{skill.title()}**')
+                    st.text(passage)
+            else:
+                st.write('No evidence excerpts saved.')
+        action = get_action(chosen['id'])
+        with st.form(f"human_action_{chosen['id']}"):
+            options = {'Pending':'pending','Reviewed':'reviewed','Needs more information':'needs_more_information'}
+            current = next((k for k,v in options.items() if v == action['state']), 'Pending')
+            status = st.selectbox('Human follow-up status', list(options), index=list(options).index(current))
+            note = st.text_area('Reviewer note', value=action['reviewer_note'], max_chars=2000,
+                                placeholder='Example: Ask for a portfolio link demonstrating Docker experience.')
+            if st.form_submit_button('Save reviewer note', type='primary'):
+                save_action(chosen['id'], options[status], note)
+                st.success('Human follow-up note saved.')
+                st.rerun()
+        st.caption('Administrative review statuses do not represent hiring, interview, or rejection decisions.')

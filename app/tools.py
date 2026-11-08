@@ -14,6 +14,11 @@ SKILL_ALIASES = {
     "javascript": ["javascript"],
     "excel": ["excel"],
     "power bi": ["power bi", "powerbi"],
+    "aws": ["aws", "amazon web services"],
+    "azure": ["azure", "microsoft azure"],
+    "etl": ["etl", "etl pipeline", "etl pipelines", "extract transform load", "extract, transform, load"],
+    "dashboard development": ["dashboard development", "dashboards", "dashboard design"],
+    "data cleaning": ["data cleaning", "cleaning datasets", "clean datasets", "data cleansing"],
     "communication": ["communication"],
 }
 

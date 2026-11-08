@@ -1,0 +1,127 @@
+{
+  "generated_at_utc": "2026-11-08T04:49:04.521946+00:00",
+  "evaluation_mode": "deterministic rules baseline; fictional test cases",
+  "passed_cases": 3,
+  "total_cases": 3,
+  "results": [
+    {
+      "id": "DA-01",
+      "role": "Junior Data Analyst",
+      "passed": true,
+      "checks": {
+        "supported_exact": true,
+        "missing_exact": true,
+        "report_covers_requirements": true,
+        "supported_have_passages": true,
+        "missing_marked_not_evidenced": true,
+        "trace_contains_core_steps": true
+      },
+      "actual_supported": [
+        "dashboard development",
+        "excel",
+        "pandas",
+        "python",
+        "sql"
+      ],
+      "actual_missing": [
+        "aws",
+        "azure",
+        "etl",
+        "power bi"
+      ],
+      "expected_supported": [
+        "dashboard development",
+        "excel",
+        "pandas",
+        "python",
+        "sql"
+      ],
+      "expected_missing": [
+        "aws",
+        "azure",
+        "etl",
+        "power bi"
+      ],
+      "trace": [
+        "requirements",
+        "extract",
+        "retrieve_skipped",
+        "compare"
+      ]
+    },
+    {
+      "id": "PY-02",
+      "role": "Python API Developer",
+      "passed": true,
+      "checks": {
+        "supported_exact": true,
+        "missing_exact": true,
+        "report_covers_requirements": true,
+        "supported_have_passages": true,
+        "missing_marked_not_evidenced": true,
+        "trace_contains_core_steps": true
+      },
+      "actual_supported": [
+        "git",
+        "python",
+        "rest api",
+        "sql"
+      ],
+      "actual_missing": [
+        "aws",
+        "docker"
+      ],
+      "expected_supported": [
+        "git",
+        "python",
+        "rest api",
+        "sql"
+      ],
+      "expected_missing": [
+        "aws",
+        "docker"
+      ],
+      "trace": [
+        "requirements",
+        "extract",
+        "retrieve_skipped",
+        "compare"
+      ]
+    },
+    {
+      "id": "FE-03",
+      "role": "Frontend Developer (supported vocabulary only)",
+      "passed": true,
+      "checks": {
+        "supported_exact": true,
+        "missing_exact": true,
+        "report_covers_requirements": true,
+        "supported_have_passages": true,
+        "missing_marked_not_evidenced": true,
+        "trace_contains_core_steps": true
+      },
+      "actual_supported": [
+        "git",
+        "javascript"
+      ],
+      "actual_missing": [
+        "docker",
+        "rest api"
+      ],
+      "expected_supported": [
+        "git",
+        "javascript"
+      ],
+      "expected_missing": [
+        "docker",
+        "rest api"
+      ],
+      "trace": [
+        "requirements",
+        "extract",
+        "retrieve_skipped",
+        "compare"
+      ]
+    }
+  ]
+}

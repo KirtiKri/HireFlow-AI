@@ -1,0 +1,24 @@
+[
+  {
+    "id": "DA-01", "role": "Junior Data Analyst",
+    "job": "Required: Python, SQL, pandas, Excel, dashboard development. Desirable: Power BI, AWS, Azure, ETL pipelines.",
+    "resume": "Built Python scripts with pandas for data cleaning. Wrote SQL queries and Excel reports. Created dashboard designs for monthly metrics.Projects: Built interactive dashboards in Excel to track monthly sales, analyze business metrics, and present findings to stakeholders.",
+    "supported": ["python", "sql", "pandas", "excel", "dashboard development"],
+    "missing": ["power bi", "aws", "azure", "etl"]
+     
+  },
+  {
+    "id": "PY-02", "role": "Python API Developer",
+    "job": "Looking for Python, Git, REST API, Docker, SQL and AWS experience.",
+    "resume": "Developed Python REST APIs backed by SQL. Used Git for version control and code reviews.",
+    "supported": ["python", "git", "rest api", "sql"],
+    "missing": ["docker", "aws"]
+  },
+  {
+    "id": "FE-03", "role": "Frontend Developer (supported vocabulary only)",
+    "job": "Need JavaScript, Git, REST API integration and Docker knowledge.",
+    "resume": "Built interactive pages in JavaScript, used Git and maintained accessible user interfaces.",
+    "supported": ["javascript", "git"],
+    "missing": ["rest api", "docker"]
+  }
+]
