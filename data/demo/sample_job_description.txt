@@ -1,0 +1,4 @@
+FICTIONAL JOB: Junior Data Analyst
+Requirements: Python, SQL, Excel, Power BI.
+Responsibilities: prepare dashboards, clean datasets, summarize findings.
+This is a synthetic test only; do not use for hiring decisions.

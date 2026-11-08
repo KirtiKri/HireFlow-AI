@@ -94,8 +94,12 @@ The MVP stores candidate references, extracted skill mentions, evidence excerpts
 ### Homepage
 ![HireFlow Homepage](docs/screenshots/homepage.png)
 
+<<<<<<< Updated upstream
 ### AI Evidence Assistant
 ![Ask the Evidence Chatbot](docs/screenshots/evidence-chat.png)
+=======
+HireFlow supports text-based resumes and optional vision-assisted extraction from PNG/JPG images and scanned PDFs.
+>>>>>>> Stashed changes
 
 ### Resume Review
 ![Resume Review Workspace](docs/screenshots/start-review.png)

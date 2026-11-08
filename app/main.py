@@ -1,10 +1,12 @@
 """HireFlow guided evidence review. Run: python -m streamlit run app/main.py"""
 import json
+import hashlib
 from pathlib import Path
 from datetime import datetime, timedelta
 import streamlit as st
 from app.database import init_db, add_job, get_jobs, get_reviews, add_review
 from app.document import extract_text
+from app.multimodal import extract_visual_text
 from app.graph import graph
 from app.review_actions import init_actions, get_action, save_action
 from app.styles import apply_styles
@@ -213,16 +215,52 @@ elif st.session_state.page == 'Start a review':
             st.text(resume_text)
     else:
         candidate_ref = st.text_input('Candidate reference (use a fictional ID)', placeholder='e.g. DEMO-014')
-        uploaded = st.file_uploader('Choose a resume (PDF, DOCX or TXT)', type=['pdf','docx','txt'])
+        uploaded = st.file_uploader('Choose a fictional resume (PDF, DOCX, TXT, PNG or JPG)',
+                                    type=['pdf', 'docx', 'txt', 'png', 'jpg', 'jpeg'])
         resume_text = None
         if uploaded is not None:
-            try:
-                resume_text = extract_text(uploaded.name, uploaded.getvalue())
-                st.success(f'{uploaded.name} was read successfully.')
-                with st.expander('Preview extracted text'):
+            contents = uploaded.getvalue()
+            extension = Path(uploaded.name).suffix.lower()
+            needs_visual = extension in {'.png', '.jpg', '.jpeg'}
+            if extension == '.pdf':
+                try:
+                    resume_text = extract_text(uploaded.name, contents)
+                    st.success('Text-based PDF read locally; no vision API needed.')
+                except ValueError as exc:
+                    if 'No extractable text' in str(exc):
+                        needs_visual = True
+                    else:
+                        st.error(f'Could not read PDF: {exc}')
+            elif not needs_visual:
+                try:
+                    resume_text = extract_text(uploaded.name, contents)
+                    st.success('Document text extracted locally.')
+                except Exception as exc:
+                    st.error(f'Could not read document: {exc}')
+            if needs_visual:
+                st.info('Visual document detected. Image transcription is optional and may send '
+                        'document content to Groq. Use fictional documents only; transcription '
+                        'may contain errors and must be verified against the original.')
+                consent = st.checkbox('I confirm this is fictional data and consent to sending '
+                                      'its images to the configured Groq vision model.',
+                                      key='vision_consent')
+                if st.button('Transcribe visual document', disabled=not consent):
+                    try:
+                        with st.spinner('Reading visible text with the vision model...'):
+                            st.session_state.visual_result = {
+                                'name': uploaded.name, 'contents_hash': hashlib.sha256(contents).hexdigest(),
+                                'text': extract_visual_text(uploaded.name, contents),
+                            }
+                    except Exception as exc:
+                        st.error(f'Visual transcription failed: {exc}')
+                cached = st.session_state.get('visual_result', {})
+                if (cached.get('name') == uploaded.name and
+                    cached.get('contents_hash') == hashlib.sha256(contents).hexdigest()):
+                    resume_text = cached['text']
+                    st.warning('AI-transcribed text: check the preview against the original before analysis.')
+            if resume_text:
+                with st.expander('Preview extracted text', expanded=needs_visual):
                     st.text(resume_text[:6000])
-            except Exception as exc:
-                st.error(f'Could not read document: {exc}')
     st.divider()
     review_journey(3)
     st.markdown('<div class="hf-step"><span>03</span><div><strong>Analyze the evidence</strong><small>Human review is always required</small></div></div>', unsafe_allow_html=True)
