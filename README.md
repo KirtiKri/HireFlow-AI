@@ -89,7 +89,19 @@ The MVP stores candidate references, extracted skill mentions, evidence excerpts
 
 ## Screenshots
 
-Add screenshots from the running app to `docs/screenshots/` (dashboard, guided review, evidence report, human review queue) before submission. Screenshots are intentionally not fabricated in this repository.
+## Application Screenshots
+
+### Homepage
+![HireFlow Homepage](docs/screenshots/homepage.png)
+
+### AI Evidence Assistant
+![Ask the Evidence Chatbot](docs/screenshots/evidence-chat.png)
+
+### Resume Review
+![Resume Review Workspace](docs/screenshots/start-review.png)
+
+### Human Review Queue
+![Human Review Queue](docs/screenshots/human-review.png)
 
 ## Design principle
 
