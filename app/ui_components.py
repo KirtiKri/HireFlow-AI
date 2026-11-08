@@ -59,17 +59,16 @@ def motion_hero():
       <div class="hf-atelier-scene" aria-hidden="true">
         <div class="hf-atelier-sun"></div><div class="hf-atelier-halo"></div>
         <div class="hf-atelier-back-paper"><span>DOCUMENT<br>STUDY / 01</span><div class="hf-atelier-back-line"></div><div class="hf-atelier-back-line short"></div></div>
-        <div class="hf-atelier-paper">
-          <div class="hf-paper-top"><span>✳</span> EVIDENCE NOTE <span>NO. 001</span></div>
-          <div class="hf-paper-title">What does the<br>document say?</div>
-          <div class="hf-paper-line"></div><div class="hf-paper-line short"></div>
-          <div class="hf-paper-highlight">✓ Python — passage located</div>
-          <div class="hf-paper-line medium"></div>
-          <div class="hf-paper-gap">◇ Cloud — not evidenced</div>
-          <div class="hf-paper-bottom">REVIEWED BY A PERSON ↗</div>
+        <div class="hf-atelier-paper hf-chat-paper">
+          <div class="hf-paper-top"><span>✳</span> ASK THE EVIDENCE <span>AI / 001</span></div>
+          <div class="hf-chat-title">A question.<br><em>A clearer answer.</em></div>
+          <div class="hf-chat-bubble hf-chat-question">What supports Python experience?</div>
+          <div class="hf-chat-bubble hf-chat-answer"><strong>✦ Evidence found</strong><br>Python is mentioned in a project. <span class="hf-chat-cite">[E1]</span></div>
+          <div class="hf-chat-bubble hf-chat-followup">◇ What still needs clarification?</div>
+          <div class="hf-chat-foot">✧ GROUNDED ANSWERS &nbsp; · &nbsp; HUMAN REVIEW</div>
         </div>
-        <div class="hf-atelier-label one">✦ TRACE THE CLAIM</div>
-        <div class="hf-atelier-label two">✳ ASK WHAT'S MISSING</div>
+        <div class="hf-atelier-label one">✦ ASK THE EVIDENCE</div>
+        <div class="hf-atelier-label two">✳ VERIFY THE SOURCE</div>
         <div class="hf-atelier-flower">✿</div>
         <div class="hf-scene-human-tag">✦ HUMAN-LED</div>
         <svg class="hf-atelier-arrow" viewBox="0 0 160 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 10 C35 75 90 10 144 74" stroke="#1C453C" stroke-width="3" stroke-dasharray="7 8" stroke-linecap="round"/><path d="M127 72 L145 76 L145 57" stroke="#1C453C" stroke-width="3" stroke-linecap="round"/></svg>

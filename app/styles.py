@@ -464,4 +464,84 @@ def apply_styles():
 }
 .stMain [data-testid="stForm"] {background:#FFFCF7!important;border:1px solid #D4DCD0!important;}
 
+
+/* PORTFOLIO POLISH — final shared control language across all four pages. */
+:root { color-scheme:light; }
+/* BaseWeb widgets sometimes use their own nested backgrounds and focus rings. */
+[data-testid="stAppViewContainer"] [data-baseweb="select"] > div,
+[data-testid="stAppViewContainer"] [data-baseweb="input"] > div,
+[data-testid="stAppViewContainer"] [data-baseweb="textarea"] > div,
+[data-testid="stAppViewContainer"] [data-testid="stTextInput"] input,
+[data-testid="stAppViewContainer"] [data-testid="stTextArea"] textarea {
+  background-color:#FFFCF6!important;
+  color:#173E34!important;
+  border-color:#C6D4C7!important;
+  box-shadow:none!important;
+}
+[data-testid="stAppViewContainer"] [data-baseweb="select"] > div:hover,
+[data-testid="stAppViewContainer"] [data-baseweb="input"] > div:hover,
+[data-testid="stAppViewContainer"] [data-baseweb="textarea"] > div:hover {
+  border-color:#7C9E88!important;
+}
+[data-testid="stAppViewContainer"] [data-baseweb="select"]:focus-within > div,
+[data-testid="stAppViewContainer"] [data-baseweb="input"]:focus-within > div,
+[data-testid="stAppViewContainer"] [data-baseweb="textarea"]:focus-within > div {
+  border-color:#2F735E!important;
+  box-shadow:0 0 0 2px rgba(47,115,94,.16)!important;
+}
+[data-testid="stAppViewContainer"] [data-testid="stBaseButton-primary"],
+[data-testid="stAppViewContainer"] button[kind="primary"] {
+  background:#173E34!important;color:#FFFCF6!important;
+  border:1px solid #173E34!important;
+  box-shadow:3px 4px 0 #D4B4A5!important;
+  border-radius:9px!important;
+  font-weight:700!important;
+}
+[data-testid="stAppViewContainer"] [data-testid="stBaseButton-primary"]:hover,
+[data-testid="stAppViewContainer"] button[kind="primary"]:hover {
+  background:#28604F!important;border-color:#28604F!important;
+}
+[data-testid="stAppViewContainer"] [data-testid="stBaseButton-primary"]:focus-visible,
+[data-testid="stAppViewContainer"] button[kind="primary"]:focus-visible {
+  outline:3px solid #B8D8C2!important;outline-offset:3px!important;
+}
+/* Keep native keyboard and screen-reader semantics; remove the distracting violet dot. */
+[data-testid="stSidebar"] [role="radiogroup"] input[type="radio"] {accent-color:#D6E8D6!important;}
+[data-testid="stSidebar"] [role="radiogroup"] label [data-baseweb="radio"] > div:first-child {
+  opacity:0!important;width:0!important;min-width:0!important;
+  max-width:0!important;margin:0!important;padding:0!important;
+  overflow:hidden!important;
+}
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {
+  background:#173E34!important;
+  box-shadow:3px 4px 0 #D6B8AA!important;
+}
+/* The sidebar can still scroll with wheel, touch, and keyboard. */
+[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+  scrollbar-width:thin;scrollbar-color:#B4C6B5 transparent;
+}
+/* Keep focus states visible on navigational items. */
+[data-testid="stSidebar"] [role="radiogroup"] label:focus-within {
+  outline:2px solid #7EA58B;outline-offset:2px;
+}
+@media(max-width:900px){
+ [data-testid="stAppViewContainer"] [data-testid="stForm"] {padding:1rem!important;}
+}
+
+
+/* Hero: illustrated evidence-aware chat (decorative only; no API calls). */
+.hf-chat-paper{padding:20px 18px!important;min-height:380px!important;background:#FFFCF2!important;}
+.hf-chat-title{font-family:Georgia,'Times New Roman',serif;font-size:25px;font-weight:700;line-height:1.08;color:#173E34;margin:19px 0 18px;}
+.hf-chat-title em{color:#975A70;font-weight:400;}
+.hf-chat-bubble{font-family:system-ui,sans-serif;font-size:11px;line-height:1.45;padding:11px 12px;margin:9px 0;border-radius:13px;border:1px solid #D4E0D3;box-shadow:2px 3px 0 #D5DDD0;}
+.hf-chat-question{margin-left:25px;background:#E1EFD9;color:#244C3F;border-bottom-right-radius:3px;}
+.hf-chat-answer{margin-right:18px;background:#FFF9ED;color:#1B4738;border-bottom-left-radius:3px;}
+.hf-chat-answer strong{font-size:11px;color:#266C52;}
+.hf-chat-cite{display:inline-block;border:1px solid #8EBA9C;background:#DDF0DE;border-radius:5px;padding:1px 4px;font-weight:800;}
+.hf-chat-followup{margin-left:12px;background:#F7E8D9;color:#85513B;border-color:#EDD0BB;font-size:10px;}
+.hf-chat-foot{border-top:1px dashed #B3C9B9;padding-top:12px;margin-top:15px;font-size:8px;letter-spacing:.08em;font-weight:800;color:#496C5E;}
+@media(max-width:1150px){.hf-chat-paper{width:270px!important;left:22%!important}.hf-chat-title{font-size:22px}}
+@media(max-width:790px){.hf-chat-paper{left:34%!important;top:5%!important}}
+@media(max-width:480px){.hf-chat-paper{left:25%!important}}
+
 </style>""", unsafe_allow_html=True)

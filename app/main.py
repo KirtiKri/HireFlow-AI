@@ -8,6 +8,7 @@ from app.document import extract_text
 from app.graph import graph
 from app.review_actions import init_actions, get_action, save_action
 from app.styles import apply_styles
+from app.evidence_chat import render_chat
 from app.evidence_report import render_evidence_report, render_trace
 from app.ui_components import intro, explain_steps, show_result, motion_hero, evidence_explorer, review_stage_hero, review_journey, workflow_trace_visual, queue_status_strip
 from app.charts import review_activity_chart, review_status_chart, requirements_chart, skill_constellation_chart
@@ -70,6 +71,25 @@ if st.session_state.page == 'Home':
     with right:
         st.button('↗  Explore saved roles', use_container_width=True,
                   on_click=navigate_to, args=('Manage jobs',), key='home_manage_jobs')
+    st.markdown('''
+    <div style="margin:1.25rem 0 .6rem;padding:1.3rem 1.5rem;
+      border:1px solid #B9D1BE;border-left:6px solid #356C52;
+      border-radius:16px;background:linear-gradient(110deg,#E8F0E6,#FFF9EE);
+      color:#173E34">
+      <div style="font-size:.72rem;letter-spacing:.14em;font-weight:800;color:#47755D">NEW · GROUNDED AI ASSISTANT</div>
+      <div style="font-family:Georgia,serif;font-size:1.65rem;font-weight:700;margin:.35rem 0">✦ Ask the Evidence</div>
+      <div style="font-size:.96rem;line-height:1.6">Ask questions about saved resume evidence, inspect cited excerpts, and explore what still needs human clarification. Input and output guardrails help keep the assistant within scope.</div>
+    </div>
+    ''', unsafe_allow_html=True)
+    if reviews:
+        st.button('✦  Try Ask the Evidence on a saved review', type='primary',
+                  use_container_width=True, key='home_try_evidence_chat',
+                  on_click=navigate_to, args=('Human review queue',))
+    else:
+        st.caption('Run your first fictional review to unlock the evidence assistant.')
+        st.button('✦  Create a review to try the assistant', type='primary',
+                  use_container_width=True, key='home_create_chat_review',
+                  on_click=navigate_to, args=('Start a review',))
     st.divider()
     st.markdown('<div class="hf-section-label">EVIDENCE UNIVERSE <span>FROM SAVED REVIEWS</span></div>', unsafe_allow_html=True)
     st.subheader('Skill constellation')
@@ -231,6 +251,7 @@ elif st.session_state.page == 'Start a review':
         except Exception as exc:
             st.error(f'Analysis failed: {exc}')
     if st.session_state.get('latest_result'):
+        st.markdown('<a href="#ask-the-evidence" style="display:inline-block;background:#E4EEE4;color:#173E34;padding:.65rem 1rem;border:1px solid #B9D1BE;border-radius:10px;text-decoration:none;font-weight:700;margin:.3rem 0 1rem">✦ Jump to AI Evidence Assistant ↓</a>', unsafe_allow_html=True)
         st.divider()
         workflow_trace_visual(st.session_state.latest_result.get('trace', []))
         show_result(st.session_state.latest_result, st.session_state.latest_review_id)
@@ -240,6 +261,10 @@ elif st.session_state.page == 'Start a review':
                           key_prefix=f"latest_{st.session_state.latest_review_id}")
         render_evidence_report(st, st.session_state.latest_result, st.session_state.latest_review_id)
         render_trace(st, st.session_state.latest_result)
+        render_chat(st, st.session_state.latest_review_id,
+                    st.session_state.latest_result.get("evidence", {}),
+                    st.session_state.latest_result.get("supported_skills", []),
+                    st.session_state.latest_result.get("missing_skills", []))
         st.button('Open human review queue', on_click=navigate_to,
                   args=('Human review queue',), key='open_human_review')
 
@@ -252,6 +277,7 @@ elif st.session_state.page == 'Human review queue':
                   args=('Start a review',), key='queue_start_review')
        
     else:
+        st.markdown('<a href="#ask-the-evidence" style="display:inline-block;background:#E4EEE4;color:#173E34;padding:.65rem 1rem;border:1px solid #B9D1BE;border-radius:10px;text-decoration:none;font-weight:700;margin:.3rem 0 1rem">✦ Jump to AI Evidence Assistant ↓</a>', unsafe_allow_html=True)
         queue_status_strip(reviews, get_action)
         st.markdown('<div class="hf-section-label">REVIEW REGISTER</div>', unsafe_allow_html=True)
         search_col, filter_col = st.columns([2, 1])
@@ -296,6 +322,9 @@ elif st.session_state.page == 'Human review queue':
         evidence_explorer(st, evidence, json.loads(chosen['supported_skills']),
                           json.loads(chosen['missing_skills']), key_prefix=f"queue_{chosen['id']}")
         render_evidence_report(st, chosen, chosen['id'])
+        render_chat(st, chosen["id"], evidence,
+                    json.loads(chosen["supported_skills"]),
+                    json.loads(chosen["missing_skills"]))
         action = get_action(chosen['id'])
         with st.form(f"human_action_{chosen['id']}"):
             options = {'Pending':'pending','Reviewed':'reviewed','Needs more information':'needs_more_information'}
