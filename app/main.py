@@ -1,6 +1,7 @@
 """HireFlow guided evidence review. Run: python -m streamlit run app/main.py"""
 import json
 from pathlib import Path
+from datetime import datetime, timedelta
 import streamlit as st
 from app.database import init_db, add_job, get_jobs, get_reviews, add_review
 from app.document import extract_text
@@ -8,8 +9,8 @@ from app.graph import graph
 from app.review_actions import init_actions, get_action, save_action
 from app.styles import apply_styles
 from app.evidence_report import render_evidence_report, render_trace
-from app.ui_components import intro, explain_steps, show_result
-from app.charts import review_activity_chart, review_status_chart, requirements_chart
+from app.ui_components import intro, explain_steps, show_result, motion_hero, evidence_explorer, review_stage_hero, review_journey, workflow_trace_visual, queue_status_strip
+from app.charts import review_activity_chart, review_status_chart, requirements_chart, skill_constellation_chart
 
 def navigate_to(destination):
     st.session_state["page"] = destination
@@ -19,6 +20,11 @@ DEMO_JOBS = json.loads((ROOT / 'data/demo/jobs.json').read_text(encoding='utf-8'
 DEMO_RESUMES = json.loads((ROOT / 'data/demo/resumes.json').read_text(encoding='utf-8'))
 st.set_page_config(page_title='HireFlow | Recruitment Workspace', layout='wide', initial_sidebar_state='expanded')
 apply_styles()
+st.markdown('''<div class="hf-global-header" role="banner">
+  <div class="hf-global-brand"><span class="hf-global-monogram">H<span>✳</span></span>
+    <span class="hf-global-title">HireFlow <em>AI</em><small>THE EVIDENCE ATELIER</small></span></div>
+  <div class="hf-global-right"><span class="hf-header-squiggle">✳</span><span class="hf-header-copy">LOOK CLOSER. SEE CLEARER.</span><span class="hf-header-status"><i></i> LOCAL DEMO</span></div>
+</div>''', unsafe_allow_html=True)
 init_db()
 init_actions()
 
@@ -28,60 +34,97 @@ if 'active_job' not in st.session_state:
     st.session_state.active_job = None
 
 with st.sidebar:
-    st.markdown('## HIREFLOW')
-    st.caption('RECRUITMENT EVIDENCE WORKSPACE')
-    st.divider()
-    st.radio('Navigate', ['Home', 'Start a review', 'Manage jobs', 'Human review queue'], key='page')
-    st.divider()
-    st.caption('DEMONSTRATION ENVIRONMENT')
-    st.caption('Fictional candidate data only. Human judgment is required for all employment decisions.')
+    st.markdown('''<div class="hf-rail-intro"><span class="hf-rail-index">✳ &nbsp; YOUR WORKSPACE</span><strong>Find your way <em>around.</em></strong><span>Explore the studio, one step at a time.</span></div>''', unsafe_allow_html=True)
+    st.radio('Navigate', ['Home', 'Start a review', 'Manage jobs', 'Human review queue'],
+             key='page', label_visibility='collapsed',
+             format_func=lambda page: {
+                 'Home': '⌂   Home',
+                 'Start a review': '⌕   Start a review',
+                 'Manage jobs': '▣   Manage jobs',
+                 'Human review queue': '☑   Human review queue',
+             }[page])
+    st.markdown('<div class="hf-rail-guide-label">NEED A LITTLE GUIDANCE? <span>↘</span></div>', unsafe_allow_html=True)
+    with st.expander('✦  How HireFlow works', expanded=False):
+        explain_steps()
+        st.caption('A missing mention means not evidenced, never that a person lacks a skill.')
+    st.markdown('<div class="hf-sidebar-footer"><span class="hf-status-dot"></span> SANDBOX ENVIRONMENT<br><small>Fictional records · Human decisions only</small></div>', unsafe_allow_html=True)
 
 jobs = get_jobs()
 reviews = get_reviews()
 job_lookup = {int(j['id']): j for j in jobs}
 
 if st.session_state.page == 'Home':
-    intro('WORKSPACE / OVERVIEW', 'Welcome to HireFlow',
-          'Review what a resume actually says against a job description. No technical setup is needed to try a sample.')
-    a, b, c = st.columns(3)
-    a.metric('Job descriptions', len(jobs))
-    b.metric('Document reviews', len(reviews))
-    c.metric('Awaiting human notes', sum(get_action(r['id'])['state'] == 'pending' for r in reviews))
-    st.divider()
-    left, right = st.columns([1.5, 1], gap='large')
+    motion_hero()
+    st.markdown('<div class="hf-editorial-rule"><span>01 / THE STUDIO</span><span>THE EVIDENCE, NOT THE ASSUMPTION</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="hf-editorial-heading"><div><small>YOUR WORKSPACE AT A GLANCE</small><h2>Good questions.<br><i>Better evidence.</i></h2></div><p>Explore saved roles, review documents, and record what still needs a human follow-up.</p></div>', unsafe_allow_html=True)
+    a, b, c, d = st.columns(4, gap='medium')
+    a.metric('Job descriptions', len(jobs), help='Saved job descriptions')
+    b.metric('Evidence reviews', len(reviews), help='Reviews stored in SQLite')
+    pending_count = sum(get_action(r['id'])['state'] == 'pending' for r in reviews)
+    c.metric('Awaiting follow-up', pending_count, help='Human review action pending')
+    d.metric('Reviewed by humans', sum(get_action(r['id'])['state'] == 'reviewed' for r in reviews), help='Administrative follow-up status')
+    left, right = st.columns([1, 1], gap='medium')
     with left:
-        st.subheader('Try your first document review')
-        st.write('Use a fictional candidate and a sample job. You can complete the demonstration in under two minutes.')
-        st.button('Start guided review', type='primary', use_container_width=True,
+        st.button('✦  Start guided review', type='primary', use_container_width=True,
                   on_click=navigate_to, args=('Start a review',), key='home_start_review')
-        st.markdown('#### What the system will show')
-        st.write('Requirements found in the resume, supporting passages, information not evidenced, and a record for a human reviewer.')
     with right:
-        explain_steps()
+        st.button('↗  Explore saved roles', use_container_width=True,
+                  on_click=navigate_to, args=('Manage jobs',), key='home_manage_jobs')
     st.divider()
+    st.markdown('<div class="hf-section-label">EVIDENCE UNIVERSE <span>FROM SAVED REVIEWS</span></div>', unsafe_allow_html=True)
+    st.subheader('Skill constellation')
+    st.caption('Each node represents a requirement with documented mentions across fictional reviews. Node size reflects mention frequency, not candidate quality.')
+    constellation = skill_constellation_chart(reviews)
+    if constellation is not None:
+        st.plotly_chart(constellation, use_container_width=True)
+    else:
+        st.info('Run sample reviews to illuminate the skill constellation.')
+    st.divider()
+    st.markdown('<div class="hf-section-label">INSIGHTS / ANALYTICS</div>', unsafe_allow_html=True)
     st.subheader('Review analytics')
+    filter_left, filter_right = st.columns([1, 1], gap='medium')
+    with filter_left:
+        period = st.selectbox('Time range', ['All time', 'Last 7 days', 'Last 30 days', 'Last 90 days'], key='analytics_period')
+    with filter_right:
+        role_options = ['All roles'] + sorted({j['title'] for j in jobs})
+        selected_role = st.selectbox('Job role', role_options, key='analytics_role')
+    analytics_reviews = list(reviews)
+    if selected_role != 'All roles':
+        matching_ids = {int(j['id']) for j in jobs if j['title'] == selected_role}
+        analytics_reviews = [r for r in analytics_reviews if int(r['job_id']) in matching_ids]
+    if period != 'All time':
+        days = {'Last 7 days': 7, 'Last 30 days': 30, 'Last 90 days': 90}[period]
+        cutoff = datetime.now() - timedelta(days=days)
+        def within_range(review):
+            try:
+                return datetime.fromisoformat(str(review['created_at']).replace('Z', '+00:00')).replace(tzinfo=None) >= cutoff
+            except (ValueError, TypeError):
+                return False
+        analytics_reviews = [r for r in analytics_reviews if within_range(r)]
+    st.caption(f'Showing {len(analytics_reviews)} of {len(reviews)} saved reviews · Filters apply to the charts below')
     activity_col, status_col = st.columns(2, gap='large')
     with activity_col:
         st.markdown('#### Document review activity')
-        fig = review_activity_chart(reviews)
+        fig = review_activity_chart(analytics_reviews)
         if fig is not None:
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info('Run a sample review to see activity.')
     with status_col:
         st.markdown('#### Human follow-up status')
-        fig = review_status_chart(reviews, get_action)
+        fig = review_status_chart(analytics_reviews, get_action)
         if fig is not None:
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info('Human review statuses will appear here.')
     st.markdown('#### Requirements with documented evidence')
-    fig = requirements_chart(reviews)
+    fig = requirements_chart(analytics_reviews)
     if fig is not None:
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.info('Analyze sample resumes to populate this chart.')
     st.divider()
+    st.markdown('<div class="hf-section-label">ACTIVITY LOG</div>', unsafe_allow_html=True)
     st.subheader('Recent activity')
     if reviews:
         rows = [{'Review': f"#{r['id']}", 'Candidate reference':r['candidate_name'],
@@ -109,6 +152,7 @@ elif st.session_state.page == 'Manage jobs':
             st.success(f'Job saved as #{job_id}. You can now use it in Start a review.')
         except ValueError as exc:
             st.error(str(exc))
+    st.markdown('<div class="hf-section-label">ROLE LIBRARY</div>', unsafe_allow_html=True)
     st.subheader('Saved jobs')
     if jobs:
         st.dataframe([{'ID':j['id'],'Job title':j['title'],'Created':j['created_at']} for j in jobs],
@@ -119,7 +163,9 @@ elif st.session_state.page == 'Manage jobs':
 elif st.session_state.page == 'Start a review':
     intro('WORKSPACE / GUIDED REVIEW', 'Review a resume',
           'Follow three steps. You can use a ready-made example or upload your own fictional document.')
-    st.markdown('### Step 1 of 3 — Select the job')
+    review_stage_hero()
+    review_journey(1)
+    st.markdown('<div class="hf-step"><span>01</span><div><strong>Select the role</strong><small>Define the requirements to inspect</small></div></div>', unsafe_allow_html=True)
     mode = st.radio('Job source', ['Use a sample job', 'Choose a saved job'], horizontal=True)
     if mode == 'Use a sample job':
         sample_job = st.selectbox('Choose a role', DEMO_JOBS, format_func=lambda j:j['title'])
@@ -136,7 +182,8 @@ elif st.session_state.page == 'Start a review':
     with st.expander('Read the job requirements'):
         st.write(job_description)
     st.divider()
-    st.markdown('### Step 2 of 3 — Provide a resume')
+    review_journey(2)
+    st.markdown('<div class="hf-step"><span>02</span><div><strong>Provide a resume</strong><small>Choose a fictional profile or upload a document</small></div></div>', unsafe_allow_html=True)
     source = st.radio('Resume source', ['Try a fictional candidate', 'Upload a resume'], horizontal=True)
     if source == 'Try a fictional candidate':
         person = st.selectbox('Choose a candidate example', DEMO_RESUMES, format_func=lambda x:x['label'])
@@ -157,7 +204,8 @@ elif st.session_state.page == 'Start a review':
             except Exception as exc:
                 st.error(f'Could not read document: {exc}')
     st.divider()
-    st.markdown('### Step 3 of 3 — Analyze the evidence')
+    review_journey(3)
+    st.markdown('<div class="hf-step"><span>03</span><div><strong>Analyze the evidence</strong><small>Human review is always required</small></div></div>', unsafe_allow_html=True)
     with st.expander('Advanced settings (optional)'):
         use_rag = st.checkbox('Use semantic evidence retrieval', value=False,
                               help='Indexes the document in ChromaDB; may take longer on first use.')
@@ -184,7 +232,12 @@ elif st.session_state.page == 'Start a review':
             st.error(f'Analysis failed: {exc}')
     if st.session_state.get('latest_result'):
         st.divider()
+        workflow_trace_visual(st.session_state.latest_result.get('trace', []))
         show_result(st.session_state.latest_result, st.session_state.latest_review_id)
+        evidence_explorer(st, st.session_state.latest_result.get('evidence', {}),
+                          st.session_state.latest_result.get('supported_skills', []),
+                          st.session_state.latest_result.get('missing_skills', []),
+                          key_prefix=f"latest_{st.session_state.latest_review_id}")
         render_evidence_report(st, st.session_state.latest_result, st.session_state.latest_review_id)
         render_trace(st, st.session_state.latest_result)
         st.button('Open human review queue', on_click=navigate_to,
@@ -199,12 +252,31 @@ elif st.session_state.page == 'Human review queue':
                   args=('Start a review',), key='queue_start_review')
        
     else:
+        queue_status_strip(reviews, get_action)
+        st.markdown('<div class="hf-section-label">REVIEW REGISTER</div>', unsafe_allow_html=True)
+        search_col, filter_col = st.columns([2, 1])
+        with search_col:
+            search_query = st.text_input('Search reviews', placeholder='Candidate reference, role, or review number', key='queue_search')
+        with filter_col:
+            queue_filter = st.selectbox('Follow-up status', ['All statuses', 'Pending', 'Reviewed', 'Needs more information'], key='queue_filter')
+        filtered = []
+        for r in reviews:
+            job_title = job_lookup.get(r['job_id'], {}).get('title', 'Archived job')
+            state = get_action(r['id'])['state'].replace('_', ' ').title()
+            searchable = f"{r['id']} {r['candidate_name']} {job_title}".lower()
+            if search_query.strip().lower() in searchable and (queue_filter == 'All statuses' or state == queue_filter):
+                filtered.append(r)
         rows = [{'Review':r['id'], 'Candidate reference':r['candidate_name'],
                  'Job':job_lookup.get(r['job_id'],{}).get('title','Archived job'),
-                 'Follow-up':get_action(r['id'])['state'].replace('_',' ').title()} for r in reviews]
-        st.dataframe(rows, hide_index=True, use_container_width=True)
-        chosen = st.selectbox('Open a saved review', reviews,
-                              format_func=lambda r:f"#{r['id']} — {r['candidate_name']}")
+                 'Follow-up':get_action(r['id'])['state'].replace('_',' ').title()} for r in filtered]
+        if rows:
+            st.dataframe(rows, hide_index=True, use_container_width=True)
+        else:
+            st.info('No reviews match your search or filter.')
+        chosen = st.selectbox('Open a saved review', filtered,
+                              format_func=lambda r:f"#{r['id']} — {r['candidate_name']}") if filtered else None
+        if chosen is None:
+            st.stop()
         st.subheader('Recorded evidence')
         left,right = st.columns(2)
         with left:
@@ -221,6 +293,8 @@ elif st.session_state.page == 'Human review queue':
                     st.text(passage)
             else:
                 st.write('No evidence excerpts saved.')
+        evidence_explorer(st, evidence, json.loads(chosen['supported_skills']),
+                          json.loads(chosen['missing_skills']), key_prefix=f"queue_{chosen['id']}")
         render_evidence_report(st, chosen, chosen['id'])
         action = get_action(chosen['id'])
         with st.form(f"human_action_{chosen['id']}"):

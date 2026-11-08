@@ -7,11 +7,11 @@ import pandas as pd
 import plotly.express as px
 
 COLORS = {
-    "forest": "#194B43",
-    "teal": "#368F85",
-    "terracotta": "#C16A45",
-    "gold": "#D5A547",
-    "sage": "#A8B8A1",
+    "forest": "#153E36",
+    "teal": "#267B6C",
+    "terracotta": "#C87558",
+    "gold": "#D6A05A",
+    "sage": "#B9D9C9",
 }
 
 STATUS_COLORS = {
@@ -86,6 +86,7 @@ def review_status_chart(reviews, get_action):
     )
     fig.update_traces(
         textinfo="percent",
+        marker=dict(line=dict(color="#FFFFFF", width=3)),
         hovertemplate="%{label}: %{value}<extra></extra>",
     )
     return style_chart(fig)
@@ -138,15 +139,60 @@ def requirements_chart(reviews):
 def style_chart(fig):
     fig.update_layout(
         template="plotly_white",
-        paper_bgcolor="#FAF9F6",
-        plot_bgcolor="#FAF9F6",
+        paper_bgcolor="#FFFFFF",
+        plot_bgcolor="#FFFFFF",
         font=dict(
             family="Arial",
-            color="#263630",
+            color="#29483B",
             size=13,
         ),
-        margin=dict(l=15, r=15, t=25, b=15),
-        height=330,
+        margin=dict(l=24, r=24, t=30, b=24),
+        height=335,
+        hoverlabel=dict(bgcolor="#153E36", font_color="white"),
         legend_title_text="",
     )
+    return fig
+
+
+def skill_constellation_chart(reviews):
+    """Decorative interactive Plotly network of *mentions*, not proficiency scores."""
+    import math
+    from collections import Counter
+    counts = Counter()
+    for review in reviews:
+        try:
+            skills = json.loads(review.get('supported_skills') or '[]')
+            if isinstance(skills, list):
+                counts.update(set(str(skill) for skill in skills))
+        except (ValueError, TypeError):
+            continue
+    items = counts.most_common(14)
+    if not items:
+        return None
+    import plotly.graph_objects as go
+    n = len(items)
+    xs, ys = [], []
+    for i in range(n):
+        angle = 2 * math.pi * i / n - math.pi / 2
+        radius = 1.1 + (i % 3) * .16
+        xs.append(radius * math.cos(angle))
+        ys.append(radius * math.sin(angle))
+    fig = go.Figure()
+    for i in range(n):
+        fig.add_trace(go.Scatter(x=[0, xs[i]], y=[0, ys[i]], mode='lines',
+            line=dict(color='rgba(107,208,177,.28)', width=1.6), hoverinfo='skip', showlegend=False))
+    fig.add_trace(go.Scatter(x=[0], y=[0], mode='markers+text', text=['HIREFLOW'], textposition='middle center',
+        textfont=dict(color='#FFFFFF',size=12,family='Arial Black'), marker=dict(size=82,color='#216E62',line=dict(color='#72D6B3',width=2)),
+        hoverinfo='skip',showlegend=False))
+    fig.add_trace(go.Scatter(x=xs,y=ys,mode='markers+text',text=[name.title() for name,_ in items],
+        textposition='top center', textfont=dict(color='#D7F4EA',size=11),
+        marker=dict(size=[22+min(count,20)*2 for _,count in items],color=[count for _,count in items],
+                    colorscale=[[0,'#6F5BEF'],[.5,'#42C6B2'],[1,'#D6B4FF']],showscale=False,
+                    line=dict(color='#A7E9D6',width=1)),
+        customdata=[count for _,count in items],hovertemplate='%{text}<br>%{customdata} reviews with mentions<extra></extra>',showlegend=False))
+    fig.update_layout(height=410,margin=dict(l=45,r=45,t=40,b=35),
+        paper_bgcolor='#102A2B',plot_bgcolor='#102A2B',
+        xaxis=dict(visible=False,range=[-1.9,1.9],fixedrange=True),
+        yaxis=dict(visible=False,range=[-1.7,1.7],scaleanchor='x',scaleratio=1,fixedrange=True),
+        hoverlabel=dict(bgcolor='#1E4C45',font_color='#FFFFFF'),dragmode=False)
     return fig
